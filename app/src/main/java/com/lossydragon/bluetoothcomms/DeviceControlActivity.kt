@@ -18,8 +18,8 @@ import android.widget.EditText
 import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
-import kotlinx.android.synthetic.main.activity_main.*
 import android.bluetooth.BluetoothGattCharacteristic
+import kotlinx.android.synthetic.main.activity_device_control.*
 import java.util.*
 
 //TODO when paired to arduino device, add method to see if its an Arduino or not.
@@ -29,15 +29,13 @@ import java.util.*
 
 /**
  * This class is called after selecting an available device.
+ * Some LE/GATT uses are from GoogleSamples
  */
 class DeviceControlActivity : AppCompatActivity() {
 
-    @BindView(R.id.control_Button)
-    lateinit var button: Button
-    @BindView(R.id.control_editText)
-    lateinit var editText: EditText
-    @BindView(R.id.control_textView)
-    lateinit var textView: TextView
+    @BindView(R.id.control_Button) lateinit var button: Button
+    @BindView(R.id.control_editText) lateinit var editText: EditText
+    @BindView(R.id.control_textView) lateinit var textView: TextView
 
     private lateinit var intentName: String
     private lateinit var intentAddress: String
@@ -55,8 +53,7 @@ class DeviceControlActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device_control)
-        setSupportActionBar(toolbar)
-
+        setSupportActionBar(toolbar2)
 
         ButterKnife.bind(this)
 
@@ -239,9 +236,21 @@ class DeviceControlActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        bluetoothThread!!.interrupt()
+
+        if(intentType == BluetoothDevice.DEVICE_TYPE_LE && mGattUpdateReceiver != null)
+            unregisterReceiver(mGattUpdateReceiver)
+        else
+            bluetoothThread!!.interrupt()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
+            unbindService(serviceConnection)
+            bluetoothLE = null
+        }
+    }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
@@ -253,12 +262,23 @@ class DeviceControlActivity : AppCompatActivity() {
 
         return when (item.itemId) {
             R.id.menu_disconnect -> {
-                Snackbar.make(recycler_devices, "Disconnected", Snackbar.LENGTH_LONG).show()
-                bluetoothThread!!.interrupt()
+                Snackbar.make(deviceLayout, "Disconnected", Snackbar.LENGTH_LONG).show()
+
+                if(intentType != BluetoothDevice.DEVICE_TYPE_LE)
+                    bluetoothThread!!.interrupt()
+
+                if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
+                    unbindService(serviceConnection)
+                }
+
+                val intent = Intent(applicationContext, MainActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                applicationContext.startActivity(intent)
+
                 return true
             }
             R.id.menu_settings -> {
-                Snackbar.make(recycler_devices, "Settings TODO", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(deviceLayout, "Settings TODO", Snackbar.LENGTH_LONG).show()
                 return true
             }
             else -> super.onOptionsItemSelected(item)
