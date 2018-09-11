@@ -3,14 +3,13 @@ package com.lossydragon.bluetoothcomms.adapters
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.Intent
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.lossydragon.bluetoothcomms.DeviceControlActivity
 import com.lossydragon.bluetoothcomms.R
-
 
 class DevicesAdapter(private var context: Context, private val list: ArrayList<Devices>):
                                         RecyclerView.Adapter<DevicesAdapter.DeviceViewHolder>() {

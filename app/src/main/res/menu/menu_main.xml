@@ -3,12 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_scan"
-        android:orderInCategory="1"
-        android:title="@string/menu_scan"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/menu_settings"
         android:orderInCategory="2"
         android:title="@string/menu_settings"

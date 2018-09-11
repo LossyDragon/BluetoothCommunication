@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.lossydragon.bluetoothcomms
+package com.lossydragon.bluetoothcomms.bluetooth
 
 import java.util.HashMap;
 

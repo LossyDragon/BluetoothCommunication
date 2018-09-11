@@ -1,4 +1,4 @@
-package com.lossydragon.bluetoothcomms
+package com.lossydragon.bluetoothcomms.bluetooth
 
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
@@ -15,9 +15,7 @@ import android.os.Binder
 import android.os.IBinder
 import android.util.Log
 
-
 import java.util.UUID
-
 
 class BluetoothLE: Service() {
 
@@ -158,14 +156,14 @@ class BluetoothLE: Service() {
         if (mBluetoothDeviceAddress != null && address == mBluetoothDeviceAddress
                 && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.")
-            if (mBluetoothGatt!!.connect()) {
+            return if (mBluetoothGatt!!.connect()) {
                 mConnectionState = STATE_CONNECTING
-                return true
+                true
             } else {
                 val device = mBluetoothAdapter!!.getRemoteDevice(address)
                 mBluetoothGatt = device.connectGatt(this, false, mGattCallback)
                 mBluetoothDeviceAddress = address
-                return false
+                false
             }
         }
 
@@ -176,7 +174,7 @@ class BluetoothLE: Service() {
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device!!.connectGatt(this, false, mGattCallback)
+        mBluetoothGatt = device.connectGatt(this, false, mGattCallback)
         Log.d(TAG, "Trying to create a new connection.")
         mBluetoothDeviceAddress = address
         mConnectionState = STATE_CONNECTING

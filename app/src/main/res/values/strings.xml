@@ -7,9 +7,14 @@
 
     <string name="rssi">Strength: %s mDb</string>
     <string name="address">Address: %s</string>
-    <string name="toast_bt_denied">Bluetotooth request: Denied</string>
+    <string name="toast_bt_denied">Bluetooth request: Denied</string>
     <string name="bluetooth_le">LE</string>
     <string name="bluetooth_cl">CL</string>
     <string name="bluetooth_dual">D</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="activity_settings">Settings</string>
+    <string name="pref_auto_connect">Auto Connect</string>
+    <string name="pref_auto_connect_desc">Automatically connect to device</string>
 
 </resources>

@@ -8,8 +8,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.IBinder
 import android.os.Message
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -19,6 +17,11 @@ import android.widget.TextView
 import butterknife.BindView
 import butterknife.ButterKnife
 import android.bluetooth.BluetoothGattCharacteristic
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
+import com.lossydragon.bluetoothcomms.bluetooth.BluetoothLE
+import com.lossydragon.bluetoothcomms.bluetooth.BluetoothClassic
+import com.lossydragon.bluetoothcomms.bluetooth.GattAttributes
 import kotlinx.android.synthetic.main.activity_device_control.*
 import java.util.*
 
@@ -47,7 +50,7 @@ class DeviceControlActivity : AppCompatActivity() {
     private var characteristicRX: BluetoothGattCharacteristic? = null
 
 
-    internal var bluetoothThread: BluetoothThread? = null
+    internal var bluetoothThread: BluetoothClassic? = null
     private var writeHandler: Handler? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -114,7 +117,7 @@ class DeviceControlActivity : AppCompatActivity() {
         if (bluetoothThread != null)
             return
 
-        bluetoothThread = BluetoothThread(address, object : Handler() {
+        bluetoothThread = BluetoothClassic(address, object : Handler() {
 
             override fun handleMessage(message: Message) {
                 val s = message.obj as String
@@ -237,7 +240,7 @@ class DeviceControlActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
 
-        if(intentType == BluetoothDevice.DEVICE_TYPE_LE && mGattUpdateReceiver != null)
+        if(intentType == BluetoothDevice.DEVICE_TYPE_LE)
             unregisterReceiver(mGattUpdateReceiver)
         else
             bluetoothThread!!.interrupt()

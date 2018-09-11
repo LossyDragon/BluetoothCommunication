@@ -1,4 +1,4 @@
-package com.lossydragon.bluetoothcomms
+package com.lossydragon.bluetoothcomms.bluetooth
 
 /*
  *  Based off of https://github.com/hmartiro/android-arduino-bluetooth
@@ -18,7 +18,7 @@ import android.util.Log
 import java.util.UUID
 import kotlin.text.Charsets.US_ASCII
 
-class BluetoothThread @SuppressLint("HandlerLeak")
+class BluetoothClassic @SuppressLint("HandlerLeak")
 constructor(address: String, private val readHandler: Handler) : Thread() {
 
     private val address: String = address.toUpperCase()
@@ -241,7 +241,7 @@ constructor(address: String, private val readHandler: Handler) : Thread() {
 
     companion object {
 
-        private const val TAG = "BluetoothThread"
+        private const val TAG = "BluetoothClassic"
         private const val DELIMITER = '\n'
 
         private val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
