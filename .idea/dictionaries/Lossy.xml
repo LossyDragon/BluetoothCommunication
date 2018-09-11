@@ -9,6 +9,7 @@
       <w>lossydragon</w>
       <w>recv</w>
       <w>rssi</w>
+      <w>textview</w>
     </words>
   </dictionary>
 </component>

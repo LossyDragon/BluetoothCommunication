@@ -2,19 +2,18 @@
     <string name="app_name">Bluetooth-Communication</string>
 
     <string name="menu_settings">Settings</string>
-    <string name="menu_scan">Scan</string>
     <string name="menu_disconnect">Disconnect</string>
 
-    <string name="rssi">Strength: %s mDb</string>
-    <string name="address">Address: %s</string>
+
     <string name="toast_bt_denied">Bluetooth request: Denied</string>
     <string name="bluetooth_le">LE</string>
     <string name="bluetooth_cl">CL</string>
     <string name="bluetooth_dual">D</string>
 
-    <string name="action_settings">Settings</string>
     <string name="activity_settings">Settings</string>
     <string name="pref_auto_connect">Auto Connect</string>
     <string name="pref_auto_connect_desc">Automatically connect to device</string>
+    <string name="activity_control_button_send">Send!</string>
+    <string name="activity_control_textview">Hello World c:</string>
 
 </resources>

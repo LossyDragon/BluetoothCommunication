@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Receives found devices and adds them to an Arraylist
+     * Receives found devices and adds them to an ArrayList
      */
     private val bluetoothDiscoveryBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {

@@ -16,7 +16,7 @@
 
 package com.lossydragon.bluetoothcomms.bluetooth
 
-import java.util.HashMap;
+import java.util.HashMap
 
 object GattAttributes {
     private val attributes = HashMap<String, String>()

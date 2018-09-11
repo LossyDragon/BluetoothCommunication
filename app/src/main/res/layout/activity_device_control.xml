@@ -25,14 +25,13 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-
     <TextView
         android:id="@+id/control_textView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="25dp"
         android:gravity="top|center"
-        android:text="Hello World c:"
+        android:text="@string/activity_control_textview"
         android:textColor="@android:color/white"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -49,13 +48,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/control_textView"
-        tools:ignore="LabelFor" />
+        tools:ignore="LabelFor,UnusedAttribute" />
 
     <Button
         android:id="@+id/control_Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Send!"
+        android:text="@string/activity_control_button_send"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/control_editText" />

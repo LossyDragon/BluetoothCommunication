@@ -164,12 +164,13 @@ class DeviceControlActivity : AppCompatActivity() {
         }
     }
 
-    /** Handles various events fired by the Service.
+    /**
+     * Handles various events fired by the Service.
      * ACTION_GATT_CONNECTED: connected to a GATT server.
      * ACTION_GATT_DISCONNECTED: disconnected from a GATT server.
      * ACTION_GATT_SERVICES_DISCOVERED: discovered GATT services.
-     * ACTION_DATA_AVAILABLE: received data from the device.  This can be a result of read
-     *                                                                   or notification operations.
+     * ACTION_DATA_AVAILABLE: received data from the device...
+     * This can be a result of read or notification operations.
      */
     private val mGattUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -185,13 +186,20 @@ class DeviceControlActivity : AppCompatActivity() {
                     supportActionBar?.title = "LE: Disconnected"
                     invalidateOptionsMenu()
                 }
-                BluetoothLE.ACTION_GATT_SERVICES_DISCOVERED -> // Show all the supported services and characteristics on the user interface.
+                BluetoothLE.ACTION_GATT_SERVICES_DISCOVERED -> {
+                    // Show all the supported services and characteristics on the user interface.
                     displayGattServices(bluetoothLE?.getSupportedGattServices())
+                }
+                BluetoothLE.ACTION_DATA_AVAILABLE -> {
+                    //Broadcast update when something is received.
+                    textView.text = intent.getStringExtra(EXTRA_DATA)
+                }
             }
         }
     }
 
-    /** Demonstrates how to iterate through the supported GATT Services/Characteristics.
+    /**
+     * Demonstrates how to iterate through the supported GATT Services/Characteristics.
      * In this sample, we populate the data structure that is bound to the ExpandableListView
      * on the UI.
      */
@@ -250,6 +258,7 @@ class DeviceControlActivity : AppCompatActivity() {
         super.onDestroy()
 
         if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
+            bluetoothLE?.disconnect()
             unbindService(serviceConnection)
             bluetoothLE = null
         }
@@ -271,6 +280,7 @@ class DeviceControlActivity : AppCompatActivity() {
                     bluetoothThread!!.interrupt()
 
                 if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
+                    bluetoothLE?.disconnect()
                     unbindService(serviceConnection)
                 }
 
@@ -298,6 +308,8 @@ class DeviceControlActivity : AppCompatActivity() {
         const val EXTRAS_DEVICE_NAME = "DEVICE_NAME"
         const val EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS"
         const val EXTRAS_DEVICE_TYPE = "DEVICE_RSSI"
+
+        const val EXTRA_DATA = "com.lossydragon.bluetoothcomms.le.EXTRA_DATA"
     }
 
 }

@@ -199,7 +199,7 @@ class BluetoothLE: Service() {
      * After using a given BLE device, the app must call this method to ensure resources are
      * released properly.
      */
-    fun close() {
+    private fun close() {
         if (mBluetoothGatt == null) {
             return
         }
