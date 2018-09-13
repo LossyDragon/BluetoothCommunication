@@ -77,7 +77,6 @@ constructor(address: String, private val readHandler: Handler) : Thread() {
         // Connect to the socket
         socket!!.connect()
 
-
         // Get input and output streams from the socket
         outStream = socket!!.outputStream
         inStream = socket!!.inputStream

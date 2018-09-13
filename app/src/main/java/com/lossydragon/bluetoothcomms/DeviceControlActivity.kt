@@ -21,13 +21,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
 import com.lossydragon.bluetoothcomms.bluetooth.BluetoothLE
 import com.lossydragon.bluetoothcomms.bluetooth.BluetoothClassic
-import com.lossydragon.bluetoothcomms.bluetooth.GattAttributes
 import kotlinx.android.synthetic.main.activity_device_control.*
 import java.util.*
 
 //TODO when paired to arduino device, add method to see if its an Arduino or not.
-//TODO handle when socket.connect() fails to connect
-//TODO when discovery is finished, app cant connect, works fine when in discovery
 //TODO when launching to ControlActivity Activity, indicate a progress until a connection.
 
 /**
@@ -48,7 +45,6 @@ class DeviceControlActivity : AppCompatActivity() {
     private var leConnected: Boolean = false
     private var characteristicTX: BluetoothGattCharacteristic? = null
     private var characteristicRX: BluetoothGattCharacteristic? = null
-
 
     internal var bluetoothThread: BluetoothClassic? = null
     private var writeHandler: Handler? = null
@@ -75,7 +71,6 @@ class DeviceControlActivity : AppCompatActivity() {
             //Starting LE Thread
             val gattServiceIntent = Intent(this, BluetoothLE::class.java)
             bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE)
-
             registerReceiver(mGattUpdateReceiver, makeGattUpdateIntentFilter())
         }
 
@@ -143,7 +138,6 @@ class DeviceControlActivity : AppCompatActivity() {
         bluetoothThread!!.start()
     }
 
-    //Functions below start or communicate with a LE device
     /**
      * LE service connection
      */
@@ -172,6 +166,7 @@ class DeviceControlActivity : AppCompatActivity() {
      * ACTION_DATA_AVAILABLE: received data from the device...
      * This can be a result of read or notification operations.
      */
+    val sb = StringBuilder()
     private val mGattUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val action = intent.action
@@ -192,7 +187,14 @@ class DeviceControlActivity : AppCompatActivity() {
                 }
                 BluetoothLE.ACTION_DATA_AVAILABLE -> {
                     //Broadcast update when something is received.
-                    textView.text = intent.getStringExtra(EXTRA_DATA)
+                    if(intent.getStringExtra(EXTRA_DATA) != "\n") {
+                        sb.append(intent.getStringExtra(EXTRA_DATA))
+                        Log.d(TAG, sb.toString())
+                    }else {
+                        textView.text = sb
+                        sb.setLength(0)
+                    }
+
                 }
             }
         }
@@ -204,33 +206,16 @@ class DeviceControlActivity : AppCompatActivity() {
      * on the UI.
      */
     private fun displayGattServices(gattServices: List<BluetoothGattService>?) {
+
         if (gattServices == null)
             return
 
-        var uuid: String?
-        val unknownServiceString = "Unknown"
-        val gattServiceData = ArrayList<HashMap<String, String>>()
-
         // Loops through available GATT Services.
         for (gattService in gattServices) {
-            val currentServiceData = HashMap<String, String>()
-            uuid = gattService.uuid.toString()
-            currentServiceData[LIST_NAME] = GattAttributes.lookup(uuid, unknownServiceString)
-
-            // If the service exists for HM 10 Serial, say so.
-            if (GattAttributes.lookup(uuid, unknownServiceString) == "HM 10 Serial")
-                Log.i(TAG, "GATT: is Serial")
-            else
-                Log.i(TAG, "GATT: not Serial")
-
-            currentServiceData[LIST_UUID] = uuid
-            gattServiceData.add(currentServiceData)
-
             // get characteristic when UUID matches RX/TX UUID
-            characteristicTX = gattService.getCharacteristic(UUID.fromString(GattAttributes.HM_RX_TX))
-            characteristicRX = gattService.getCharacteristic(UUID.fromString(GattAttributes.HM_RX_TX))
+            characteristicTX = gattService.getCharacteristic(UUID.fromString(SH_HC_08_RWN))
+            characteristicRX = gattService.getCharacteristic(UUID.fromString(SH_HC_08_RWN))
         }
-
     }
 
     /**
@@ -248,20 +233,12 @@ class DeviceControlActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
 
-        if(intentType == BluetoothDevice.DEVICE_TYPE_LE)
+        //DEVICE_TYPE_CLASSIC = 1, DEVICE_TYPE_LE = 2, DEVICE_TYPE_DUAL = 3
+        if (intentType == 1 || intentType == 3)
+            bluetoothThread?.interrupt()
+
+        if(intentType == 2)
             unregisterReceiver(mGattUpdateReceiver)
-        else
-            bluetoothThread!!.interrupt()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-        if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
-            bluetoothLE?.disconnect()
-            unbindService(serviceConnection)
-            bluetoothLE = null
-        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -301,14 +278,12 @@ class DeviceControlActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "DeviceControlActivity"
 
-        private const val LIST_NAME = "NAME"
-        private const val LIST_UUID = "UUID"
-
         //Intent values
         const val EXTRAS_DEVICE_NAME = "DEVICE_NAME"
         const val EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS"
         const val EXTRAS_DEVICE_TYPE = "DEVICE_RSSI"
 
+        const val SH_HC_08_RWN = "0000ffe1-0000-1000-8000-00805f9b34fb"
         const val EXTRA_DATA = "com.lossydragon.bluetoothcomms.le.EXTRA_DATA"
     }
 

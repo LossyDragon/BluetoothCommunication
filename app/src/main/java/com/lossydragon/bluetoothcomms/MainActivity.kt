@@ -3,7 +3,6 @@ package com.lossydragon.bluetoothcomms
 import android.Manifest
 import android.os.Bundle
 import android.util.Log
-import android.view.MenuItem
 import butterknife.ButterKnife
 import android.bluetooth.BluetoothAdapter
 import android.content.Intent
@@ -15,9 +14,12 @@ import android.content.Context
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Handler
+import android.view.Gravity
 import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -29,7 +31,6 @@ import androidx.recyclerview.widget.RecyclerView
 import butterknife.BindView
 import cat.ereza.customactivityoncrash.config.CaocConfig
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import com.lossydragon.bluetoothcomms.adapters.Devices
 import com.lossydragon.bluetoothcomms.adapters.DevicesAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -42,6 +43,7 @@ class MainActivity : AppCompatActivity() {
     @BindView(R.id.recycler_devices) lateinit var recyclerView: RecyclerView
     @BindView(R.id.progress_bar) lateinit var progressBar: ProgressBar
     @BindView(R.id.fab_scan) lateinit var fabScan: FloatingActionButton
+    @BindView(R.id.scan_hint) lateinit var scanHint: TextView
 
     private var bluetoothManager: BluetoothManager? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -55,7 +57,9 @@ class MainActivity : AppCompatActivity() {
 
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
+
+        setSupportActionBar(bottom_app_bar)
+        ButterKnife.bind(this)
 
         /* Custom app crash logger */
         CaocConfig.Builder.create()
@@ -66,9 +70,6 @@ class MainActivity : AppCompatActivity() {
                 .logErrorOnRestart(true)
                 .trackActivities(true)
                 .apply()
-
-        Log.i(TAG, "Created...")
-        ButterKnife.bind(this)
 
         handler = Handler()
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity() {
         //Fab icon to start/cancel bluetooth scanning.
         fabScan.setOnClickListener { _ ->
             scanLeDevices()
+            scanHint.text = getText(R.string.scan_hint_no_devices)
         }
     }
 
@@ -142,22 +144,23 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        super.onCreateOptionsMenu(menu)
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
-    }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+   override fun onCreateOptionsMenu(menu: Menu): Boolean {
+       super.onCreateOptionsMenu(menu)
+       menuInflater.inflate(R.menu.menu_main, menu)
+       return true
+   }
 
-        return when (item.itemId) {
-            R.id.menu_settings -> {
-                startActivity(Intent(this, SettingsActivity::class.java))
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
+   override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+       return when (item.itemId) {
+           R.id.menu_settings -> {
+               startActivity(Intent(this, SettingsActivity::class.java))
+               true
+           }
+           else -> super.onOptionsItemSelected(item)
+       }
+   }
 
     /**
      * Function to start bluetooth discovery
@@ -172,14 +175,13 @@ class MainActivity : AppCompatActivity() {
         //Turn on bluetooth if not on during button press.
         if (!bluetoothAdapter!!.isEnabled) {
             fabScan.setImageResource(R.drawable.ic_bluetooth)
-            Snackbar.make(mainLayout, "Turning on Bluetooth...", Snackbar.LENGTH_LONG).show()
             bluetoothAdapter?.enable()
         }
 
         if (!bluetoothAdapter!!.isDiscovering) {
             //Start Discovery
             fabScan.setImageResource(R.drawable.ic_bluetooth_searching)
-            Snackbar.make(mainLayout, "Scanning for 10 seconds.", Snackbar.LENGTH_LONG).show()
+            toast("Scanning for 10 seconds.")
             Log.d(TAG, "Discovery Started...")
             progressBar.visibility = View.VISIBLE
             bluetoothAdapter?.startDiscovery()
@@ -200,7 +202,6 @@ class MainActivity : AppCompatActivity() {
             progressBar.visibility = View.INVISIBLE
             bluetoothAdapter?.cancelDiscovery()
             handler!!.removeCallbacksAndMessages(null)
-            return
         }
     }
 
@@ -236,11 +237,21 @@ class MainActivity : AppCompatActivity() {
                     Log.i(TAG, "Name: " + result.name + " RSSI: " + rssi + " Type: " + result.type + " Bond: " + result.bondState)
 
                     deviceList.add(Devices(result.name, result.address, rssi.toString(), result.type))
+
+                    scanHint.visibility = View.GONE
                 }
                 adapter?.notifyDataSetChanged()
 
             }
         }
+    }
+
+    //Easy Toaster
+    private fun Context.toast(message: CharSequence) {
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        //yOffset set to be above the FAB icon.
+        toast.setGravity(Gravity.BOTTOM, 0, 325)
+        toast.show()
     }
 
     companion object {

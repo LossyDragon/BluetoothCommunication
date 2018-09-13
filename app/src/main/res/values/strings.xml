@@ -15,5 +15,7 @@
     <string name="pref_auto_connect_desc">Automatically connect to device</string>
     <string name="activity_control_button_send">Send!</string>
     <string name="activity_control_textview">Hello World c:</string>
+    <string name="scan_hint_text">No Bluetooth devices found.\nTap on the lower right button to discover devices.</string>
+    <string name="scan_hint_no_devices">No Bluetooth devices found.</string>
 
 </resources>

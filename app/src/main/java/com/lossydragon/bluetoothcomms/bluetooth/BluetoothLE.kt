@@ -73,12 +73,14 @@ class BluetoothLE: Service() {
         sendBroadcast(intent)
     }
 
+
+    //TODO string build incoming data until \n
     private fun broadcastUpdate(action: String, characteristic: BluetoothGattCharacteristic) {
         val intent = Intent(action)
 
         // For all other profiles, writes the data formatted in HEX.
         val data = characteristic.value
-        Log.i(TAG, "data" + characteristic.value)
+        //Log.i(TAG, "data" + characteristic.value)
 
         if (data != null && data.isNotEmpty()) {
             val stringBuilder = StringBuilder(data.size)
@@ -209,7 +211,9 @@ class BluetoothLE: Service() {
 
     /**
      * Request a read on a given `BluetoothGattCharacteristic`. The read result is reported
-     * asynchronously through the `BluetoothGattCallback#onCharacteristicRead(android.bluetooth.BluetoothGatt, android.bluetooth.BluetoothGattCharacteristic, int)`
+     * asynchronously through the `BluetoothGattCallback
+     * #onCharacteristicRead(android.bluetooth.BluetoothGatt,
+     * android.bluetooth.BluetoothGattCharacteristic, int)`
      * callback.
      *
      * @param characteristic The characteristic to read from.
@@ -249,7 +253,6 @@ class BluetoothLE: Service() {
         }
         mBluetoothGatt!!.setCharacteristicNotification(characteristic, enabled)
 
-        // This is specific to Heart Rate Measurement.
         if (SH_HC_08_RWN == characteristic.uuid) {
             val descriptor = characteristic.getDescriptor(CHARACTERISTIC_CONFIG)
             descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
