@@ -10,9 +10,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.lossydragon.bluetoothcomms.DeviceControlActivity
 import com.lossydragon.bluetoothcomms.R
+import java.util.*
+import kotlin.collections.ArrayList
 
-class DevicesAdapter(private var context: Context, private val list: ArrayList<Devices>):
-                                        RecyclerView.Adapter<DevicesAdapter.DeviceViewHolder>() {
+class DevicesAdapter(private var context: Context, private val list: ArrayList<Devices>) :
+        RecyclerView.Adapter<DevicesAdapter.DeviceViewHolder>() {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
 
@@ -43,7 +45,7 @@ class DevicesAdapter(private var context: Context, private val list: ArrayList<D
     }
 
     class DeviceViewHolder(view: View, private var context: Context, private var devices: ArrayList<Devices>)
-                                            : RecyclerView.ViewHolder(view), View.OnClickListener {
+        : RecyclerView.ViewHolder(view), View.OnClickListener {
 
         val listName: TextView
         val listAddress: TextView
@@ -66,7 +68,7 @@ class DevicesAdapter(private var context: Context, private val list: ArrayList<D
 
             val intent = Intent(context, DeviceControlActivity::class.java)
             intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_NAME, devices.name)
-            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, devices.address.toUpperCase())
+            intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_ADDRESS, devices.address.toUpperCase(Locale.getDefault()))
             intent.putExtra(DeviceControlActivity.EXTRAS_DEVICE_TYPE, devices.type)
 
             //IDK if this is normal/good or not.

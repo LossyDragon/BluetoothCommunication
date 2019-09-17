@@ -17,7 +17,7 @@ import android.util.Log
 
 import java.util.UUID
 
-class BluetoothLE: Service() {
+class BluetoothLE : Service() {
 
     private var mBluetoothManager: BluetoothManager? = null
     private var mBluetoothAdapter: BluetoothAdapter? = null
@@ -209,22 +209,22 @@ class BluetoothLE: Service() {
         mBluetoothGatt = null
     }
 
-    /**
-     * Request a read on a given `BluetoothGattCharacteristic`. The read result is reported
-     * asynchronously through the `BluetoothGattCallback
-     * #onCharacteristicRead(android.bluetooth.BluetoothGatt,
-     * android.bluetooth.BluetoothGattCharacteristic, int)`
-     * callback.
-     *
-     * @param characteristic The characteristic to read from.
-     */
-    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
-        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
-            Log.w(TAG, "BluetoothAdapter not initialized")
-            return
-        }
-        mBluetoothGatt!!.readCharacteristic(characteristic)
-    }
+//    /**
+//     * Request a read on a given `BluetoothGattCharacteristic`. The read result is reported
+//     * asynchronously through the `BluetoothGattCallback
+//     * #onCharacteristicRead(android.bluetooth.BluetoothGatt,
+//     * android.bluetooth.BluetoothGattCharacteristic, int)`
+//     * callback.
+//     *
+//     * @param characteristic The characteristic to read from.
+//     */
+//    fun readCharacteristic(characteristic: BluetoothGattCharacteristic) {
+//        if (mBluetoothAdapter == null || mBluetoothGatt == null) {
+//            Log.w(TAG, "BluetoothAdapter not initialized")
+//            return
+//        }
+//        mBluetoothGatt!!.readCharacteristic(characteristic)
+//    }
 
     /**
      * Write to a given char
@@ -276,7 +276,7 @@ class BluetoothLE: Service() {
 
         //Service uuid : FFE0
         //Write,Read, Notify char uuid: FFE1
-        var SH_HC_08_SERVICE: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
+//        var SH_HC_08_SERVICE: UUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb")
         var SH_HC_08_RWN: UUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb")
         var CHARACTERISTIC_CONFIG: UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
 

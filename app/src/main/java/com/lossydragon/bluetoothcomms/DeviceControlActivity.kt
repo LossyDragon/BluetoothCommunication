@@ -2,6 +2,7 @@ package com.lossydragon.bluetoothcomms
 
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattCharacteristic
 import android.bluetooth.BluetoothGattService
 import android.content.*
 import android.os.Bundle
@@ -11,16 +12,10 @@ import android.os.Message
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import butterknife.BindView
-import butterknife.ButterKnife
-import android.bluetooth.BluetoothGattCharacteristic
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.snackbar.Snackbar
-import com.lossydragon.bluetoothcomms.bluetooth.BluetoothLE
 import com.lossydragon.bluetoothcomms.bluetooth.BluetoothClassic
+import com.lossydragon.bluetoothcomms.bluetooth.BluetoothLE
 import kotlinx.android.synthetic.main.activity_device_control.*
 import java.util.*
 
@@ -32,10 +27,6 @@ import java.util.*
  * Some LE/GATT uses are from GoogleSamples
  */
 class DeviceControlActivity : AppCompatActivity() {
-
-    @BindView(R.id.control_Button) lateinit var button: Button
-    @BindView(R.id.control_editText) lateinit var editText: EditText
-    @BindView(R.id.control_textView) lateinit var textView: TextView
 
     private lateinit var intentName: String
     private lateinit var intentAddress: String
@@ -54,11 +45,9 @@ class DeviceControlActivity : AppCompatActivity() {
         setContentView(R.layout.activity_device_control)
         setSupportActionBar(toolbar2)
 
-        ButterKnife.bind(this)
-
         //Grab the intents we passed and put them into some vars.
-        intentName = intent.getStringExtra(EXTRAS_DEVICE_NAME)
-        intentAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS)
+        intentName = intent.getStringExtra(EXTRAS_DEVICE_NAME)!!
+        intentAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS)!!
         intentType = intent.getIntExtra(EXTRAS_DEVICE_TYPE, 1)
 
         Log.i(TAG, "Intent Stuff: $intentName / $intentAddress / $intentType")
@@ -75,9 +64,9 @@ class DeviceControlActivity : AppCompatActivity() {
         }
 
 
-        button.setOnClickListener {
+        control_Button.setOnClickListener {
 
-            val message = editText.text.toString()
+            val message = control_editText.text.toString()
 
             //Write to Classic Thread
             if (intentType == BluetoothDevice.DEVICE_TYPE_CLASSIC) {
@@ -115,8 +104,7 @@ class DeviceControlActivity : AppCompatActivity() {
         bluetoothThread = BluetoothClassic(address, object : Handler() {
 
             override fun handleMessage(message: Message) {
-                val s = message.obj as String
-                when (s) {
+                when (val s = message.obj as String) {
                     "CONNECTED" -> {
                         supportActionBar?.title = "Connected"
                     }
@@ -128,7 +116,7 @@ class DeviceControlActivity : AppCompatActivity() {
                         bluetoothThread = null
                     }
                     else -> {
-                        textView.text = s
+                        control_textView.text = s
                     }
                 }
             }
@@ -169,8 +157,7 @@ class DeviceControlActivity : AppCompatActivity() {
     val sb = StringBuilder()
     private val mGattUpdateReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
-            when (action) {
+            when (intent.action) {
                 BluetoothLE.ACTION_GATT_CONNECTED -> {
                     leConnected = true
                     supportActionBar?.title = "LE: Connected"
@@ -187,11 +174,11 @@ class DeviceControlActivity : AppCompatActivity() {
                 }
                 BluetoothLE.ACTION_DATA_AVAILABLE -> {
                     //Broadcast update when something is received.
-                    if(intent.getStringExtra(EXTRA_DATA) != "\n") {
+                    if (intent.getStringExtra(EXTRA_DATA) != "\n") {
                         sb.append(intent.getStringExtra(EXTRA_DATA))
                         Log.d(TAG, sb.toString())
-                    }else {
-                        textView.text = sb
+                    } else {
+                        control_textView.text = sb
                         sb.setLength(0)
                     }
 
@@ -237,7 +224,7 @@ class DeviceControlActivity : AppCompatActivity() {
         if (intentType == 1 || intentType == 3)
             bluetoothThread?.interrupt()
 
-        if(intentType == 2)
+        if (intentType == 2)
             unregisterReceiver(mGattUpdateReceiver)
     }
 
@@ -253,10 +240,10 @@ class DeviceControlActivity : AppCompatActivity() {
             R.id.menu_disconnect -> {
                 Snackbar.make(deviceLayout, "Disconnected", Snackbar.LENGTH_LONG).show()
 
-                if(intentType != BluetoothDevice.DEVICE_TYPE_LE)
+                if (intentType != BluetoothDevice.DEVICE_TYPE_LE)
                     bluetoothThread!!.interrupt()
 
-                if(intentType == BluetoothDevice.DEVICE_TYPE_LE) {
+                if (intentType == BluetoothDevice.DEVICE_TYPE_LE) {
                     bluetoothLE?.disconnect()
                     unbindService(serviceConnection)
                 }

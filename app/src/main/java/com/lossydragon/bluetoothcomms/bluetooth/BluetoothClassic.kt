@@ -14,14 +14,14 @@ import java.io.OutputStream
 import android.os.Handler
 import android.os.Message
 import android.util.Log
+import java.util.*
 
-import java.util.UUID
 import kotlin.text.Charsets.US_ASCII
 
 class BluetoothClassic @SuppressLint("HandlerLeak")
 constructor(address: String, private val readHandler: Handler) : Thread() {
 
-    private val address: String = address.toUpperCase()
+    private val address: String = address.toUpperCase(Locale.getDefault())
     private var socket: BluetoothSocket? = null
 
     private var outStream: OutputStream? = null

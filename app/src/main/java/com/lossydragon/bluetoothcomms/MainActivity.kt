@@ -1,25 +1,22 @@
 package com.lossydragon.bluetoothcomms
 
 import android.Manifest
-import android.os.Bundle
-import android.util.Log
-import butterknife.ButterKnife
-import android.bluetooth.BluetoothAdapter
-import android.content.Intent
 import android.app.Activity
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -27,10 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import butterknife.BindView
 import cat.ereza.customactivityoncrash.config.CaocConfig
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.lossydragon.bluetoothcomms.adapters.Devices
 import com.lossydragon.bluetoothcomms.adapters.DevicesAdapter
 import kotlinx.android.synthetic.main.activity_main.*
@@ -39,11 +33,6 @@ import java.util.*
 //TODO auto-connect on resume?
 //TODO Location Perms and Bluetooth enable prompt from appearing at the same time.
 class MainActivity : AppCompatActivity() {
-
-    @BindView(R.id.recycler_devices) lateinit var recyclerView: RecyclerView
-    @BindView(R.id.progress_bar) lateinit var progressBar: ProgressBar
-    @BindView(R.id.fab_scan) lateinit var fabScan: FloatingActionButton
-    @BindView(R.id.scan_hint) lateinit var scanHint: TextView
 
     private var bluetoothManager: BluetoothManager? = null
     private var bluetoothAdapter: BluetoothAdapter? = null
@@ -59,7 +48,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         setSupportActionBar(bottom_app_bar)
-        ButterKnife.bind(this)
 
         /* Custom app crash logger */
         CaocConfig.Builder.create()
@@ -75,24 +63,23 @@ class MainActivity : AppCompatActivity() {
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
         deviceList = ArrayList()
 
-
         bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager!!.adapter
 
-        val layoutManager = LinearLayoutManager(this)
-
         adapter = DevicesAdapter(this, deviceList)
-        recyclerView.adapter = adapter
 
-        recyclerView.setHasFixedSize(true)
-        recyclerView.layoutManager = layoutManager
-        recyclerView.addItemDecoration(DividerItemDecoration(this, LinearLayoutManager.VERTICAL))
-        recyclerView.itemAnimator = DefaultItemAnimator()
+        recycler_devices.apply {
+            adapter = this.adapter
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(context)
+            addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
+            itemAnimator = DefaultItemAnimator()
+        }
 
         //Fab icon to start/cancel bluetooth scanning.
-        fabScan.setOnClickListener { _ ->
+        fab_scan.setOnClickListener {
             scanLeDevices()
-            scanHint.text = getText(R.string.scan_hint_no_devices)
+            scan_hint.text = getText(R.string.scan_hint_no_devices)
         }
     }
 
@@ -104,7 +91,7 @@ class MainActivity : AppCompatActivity() {
             val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             startActivityForResult(enableBtIntent, requestEnableBluetooth)
         } else
-            fabScan.setImageResource(R.drawable.ic_bluetooth)
+            fab_scan.setImageResource(R.drawable.ic_bluetooth)
 
 
         //Check to see if Coarse Location is granted.
@@ -140,27 +127,27 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        fabScan.setImageResource(R.drawable.ic_bluetooth)
+        fab_scan.setImageResource(R.drawable.ic_bluetooth)
         super.onActivityResult(requestCode, resultCode, data)
     }
 
 
-   override fun onCreateOptionsMenu(menu: Menu): Boolean {
-       super.onCreateOptionsMenu(menu)
-       menuInflater.inflate(R.menu.menu_main, menu)
-       return true
-   }
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
 
-   override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
 
-       return when (item.itemId) {
-           R.id.menu_settings -> {
-               startActivity(Intent(this, SettingsActivity::class.java))
-               true
-           }
-           else -> super.onOptionsItemSelected(item)
-       }
-   }
+        return when (item.itemId) {
+            R.id.menu_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     /**
      * Function to start bluetooth discovery
@@ -174,23 +161,23 @@ class MainActivity : AppCompatActivity() {
 
         //Turn on bluetooth if not on during button press.
         if (!bluetoothAdapter!!.isEnabled) {
-            fabScan.setImageResource(R.drawable.ic_bluetooth)
+            fab_scan.setImageResource(R.drawable.ic_bluetooth)
             bluetoothAdapter?.enable()
         }
 
         if (!bluetoothAdapter!!.isDiscovering) {
             //Start Discovery
-            fabScan.setImageResource(R.drawable.ic_bluetooth_searching)
+            fab_scan.setImageResource(R.drawable.ic_bluetooth_searching)
             toast("Scanning for 10 seconds.")
             Log.d(TAG, "Discovery Started...")
-            progressBar.visibility = View.VISIBLE
+            progress_bar.visibility = View.VISIBLE
             bluetoothAdapter?.startDiscovery()
 
             //Stop Discovery after 10 sec.
             handler!!.postDelayed({
-                fabScan.setImageResource(R.drawable.ic_bluetooth)
+                fab_scan.setImageResource(R.drawable.ic_bluetooth)
                 Log.d(TAG, "Discovery Auto-Stopped...")
-                progressBar.visibility = View.INVISIBLE
+                progress_bar.visibility = View.INVISIBLE
                 bluetoothAdapter?.cancelDiscovery()
 
             }, DISCOVERY_TIME)
@@ -198,8 +185,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             //Cancel Discovery
             Log.d(TAG, "Discovery Stopped...")
-            fabScan.setImageResource(R.drawable.ic_bluetooth)
-            progressBar.visibility = View.INVISIBLE
+            fab_scan.setImageResource(R.drawable.ic_bluetooth)
+            progress_bar.visibility = View.INVISIBLE
             bluetoothAdapter?.cancelDiscovery()
             handler!!.removeCallbacksAndMessages(null)
         }
@@ -230,7 +217,7 @@ class MainActivity : AppCompatActivity() {
             val action = intent.action
 
             if (action == BluetoothDevice.ACTION_FOUND) {
-                val result = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                val result = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)!!
                 val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, java.lang.Short.MIN_VALUE)
 
                 if (listAddSkip(result.address, rssi.toInt())) {
@@ -238,7 +225,7 @@ class MainActivity : AppCompatActivity() {
 
                     deviceList.add(Devices(result.name, result.address, rssi.toString(), result.type))
 
-                    scanHint.visibility = View.GONE
+                    fab_scan.hide()
                 }
                 adapter?.notifyDataSetChanged()
 

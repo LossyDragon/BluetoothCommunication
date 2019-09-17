@@ -4,9 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:attr/selectableItemBackground"
     android:orientation="vertical"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingTop="2dp"
@@ -14,12 +14,12 @@
     android:paddingBottom="4dp">
 
     <TextView
-        android:textColor="@android:color/white"
         android:id="@+id/device_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:text="Some BLE device"
+        android:textColor="@android:color/white"
         android:textSize="24sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -42,12 +42,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        tools:text="DE:AD:BE:EF:BA:BE"
         android:textColor="@android:color/white"
         android:textSize="12sp"
         app:layout_constraintStart_toEndOf="@+id/textView"
         app:layout_constraintTop_toBottomOf="@+id/device_name"
-        tools:ignore="HardcodedText" />
+        tools:ignore="HardcodedText"
+        tools:text="DE:AD:BE:EF:BA:BE" />
 
     <TextView
         android:id="@+id/textView2"
