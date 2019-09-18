@@ -13,7 +13,6 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -34,13 +33,13 @@ import java.util.*
 //TODO Location Perms and Bluetooth enable prompt from appearing at the same time.
 class MainActivity : AppCompatActivity() {
 
-    private var bluetoothManager: BluetoothManager? = null
-    private var bluetoothAdapter: BluetoothAdapter? = null
+    private lateinit var bluetoothManager: BluetoothManager
+    private lateinit var bluetoothAdapter: BluetoothAdapter
     private var permissionsRequestLocation = 0
 
-    private var handler: Handler? = null
-    private var adapter: DevicesAdapter? = null
-    private lateinit var deviceList: ArrayList<Devices>
+    private var handler: Handler = Handler()
+    private lateinit var devicesAdapter: DevicesAdapter
+    private var deviceList: ArrayList<Devices> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
@@ -59,17 +58,14 @@ class MainActivity : AppCompatActivity() {
                 .trackActivities(true)
                 .apply()
 
-        handler = Handler()
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        deviceList = ArrayList()
-
         bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        bluetoothAdapter = bluetoothManager!!.adapter
+        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
 
-        adapter = DevicesAdapter(this, deviceList)
+        bluetoothAdapter = bluetoothManager.adapter
+        devicesAdapter = DevicesAdapter(this, deviceList)
 
         recycler_devices.apply {
-            adapter = this.adapter
+            adapter = devicesAdapter
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(DividerItemDecoration(context, LinearLayoutManager.VERTICAL))
@@ -87,36 +83,46 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
 
         //Check to see if BT is enabled.
-        if (!bluetoothAdapter!!.isEnabled) {
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, requestEnableBluetooth)
-        } else
+        if (!bluetoothAdapter.isEnabled) {
+            startActivityForResult(
+                    Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),
+                    requestEnableBluetooth
+            )
+        } else {
             fab_scan.setImageResource(R.drawable.ic_bluetooth)
-
+        }
 
         //Check to see if Coarse Location is granted.
-        if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
-                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), permissionsRequestLocation)
+                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION),
+                    permissionsRequestLocation
+            )
+        }
+
 
         deviceList.clear()
-        adapter?.notifyDataSetChanged()
+        devicesAdapter.notifyDataSetChanged()
     }
 
     override fun onPause() {
         super.onPause()
 
-        bluetoothAdapter?.cancelDiscovery()
+        bluetoothAdapter.cancelDiscovery()
         deviceList.clear()
-        adapter?.notifyDataSetChanged()
+        devicesAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroy() {
         super.onDestroy()
 
         deviceList.clear()
-        adapter?.notifyDataSetChanged()
+        devicesAdapter.notifyDataSetChanged()
+        scan_hint.visibility = View.VISIBLE
         unregisterReceiver(bluetoothDiscoveryBroadcastReceiver)
     }
 
@@ -156,29 +162,31 @@ class MainActivity : AppCompatActivity() {
      */
     private fun scanLeDevices() {
 
-        registerReceiver(bluetoothDiscoveryBroadcastReceiver,
-                IntentFilter(BluetoothDevice.ACTION_FOUND))
+        registerReceiver(
+                bluetoothDiscoveryBroadcastReceiver,
+                IntentFilter(BluetoothDevice.ACTION_FOUND)
+        )
 
         //Turn on bluetooth if not on during button press.
-        if (!bluetoothAdapter!!.isEnabled) {
+        if (!bluetoothAdapter.isEnabled) {
             fab_scan.setImageResource(R.drawable.ic_bluetooth)
-            bluetoothAdapter?.enable()
+            bluetoothAdapter.enable()
         }
 
-        if (!bluetoothAdapter!!.isDiscovering) {
+        if (!bluetoothAdapter.isDiscovering) {
             //Start Discovery
             fab_scan.setImageResource(R.drawable.ic_bluetooth_searching)
             toast("Scanning for 10 seconds.")
             Log.d(TAG, "Discovery Started...")
             progress_bar.visibility = View.VISIBLE
-            bluetoothAdapter?.startDiscovery()
+            bluetoothAdapter.startDiscovery()
 
             //Stop Discovery after 10 sec.
-            handler!!.postDelayed({
+            handler.postDelayed({
                 fab_scan.setImageResource(R.drawable.ic_bluetooth)
                 Log.d(TAG, "Discovery Auto-Stopped...")
                 progress_bar.visibility = View.INVISIBLE
-                bluetoothAdapter?.cancelDiscovery()
+                bluetoothAdapter.cancelDiscovery()
 
             }, DISCOVERY_TIME)
 
@@ -187,8 +195,8 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "Discovery Stopped...")
             fab_scan.setImageResource(R.drawable.ic_bluetooth)
             progress_bar.visibility = View.INVISIBLE
-            bluetoothAdapter?.cancelDiscovery()
-            handler!!.removeCallbacksAndMessages(null)
+            bluetoothAdapter.cancelDiscovery()
+            handler.removeCallbacksAndMessages(null)
         }
     }
 
@@ -214,9 +222,8 @@ class MainActivity : AppCompatActivity() {
      */
     private val bluetoothDiscoveryBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val action = intent.action
 
-            if (action == BluetoothDevice.ACTION_FOUND) {
+            if (intent.action == BluetoothDevice.ACTION_FOUND) {
                 val result = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)!!
                 val rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI, java.lang.Short.MIN_VALUE)
 
@@ -224,21 +231,12 @@ class MainActivity : AppCompatActivity() {
                     Log.i(TAG, "Name: " + result.name + " RSSI: " + rssi + " Type: " + result.type + " Bond: " + result.bondState)
 
                     deviceList.add(Devices(result.name, result.address, rssi.toString(), result.type))
-
-                    fab_scan.hide()
+                    scan_hint.visibility = View.GONE
                 }
-                adapter?.notifyDataSetChanged()
+                devicesAdapter.notifyDataSetChanged()
 
             }
         }
-    }
-
-    //Easy Toaster
-    private fun Context.toast(message: CharSequence) {
-        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
-        //yOffset set to be above the FAB icon.
-        toast.setGravity(Gravity.BOTTOM, 0, 325)
-        toast.show()
     }
 
     companion object {

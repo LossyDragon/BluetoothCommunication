@@ -6,7 +6,7 @@
     <color name="colorAccent">#D81B60</color>
     -->
 
-    <color name="colorPrimary">#3F00bF</color>
-    <color name="colorPrimaryDark">#3700BF</color>
+    <color name="colorPrimary">#0366FF</color>
+    <color name="colorPrimaryDark">#0155FF</color>
     <color name="colorAccent">#0366FF</color>
 </resources>
